@@ -1,0 +1,51 @@
+<script setup lang="ts">
+import { FilterOptions, type Filter } from '@/types/Filter';
+import { ref } from 'vue';
+
+function getOptionLabel(option: Filter): string {
+  switch (option) {
+    case 'all':
+      return 'Все';
+    case 'done':
+      return 'Выполненные';
+    case 'not-done':
+      return 'Невыполненные';
+    default:
+      return '';
+  }
+}
+
+const currentFilter = ref<Filter>('all');
+
+const emit = defineEmits(['update-filter']);
+
+function selectFilter(filter: Filter): void {
+  currentFilter.value = filter;
+  emit('update-filter', filter);
+}
+</script>
+
+<template>
+  <div class="flex justify-between gap-5 p-5 px-[50px] py-[25px] text-center text-3xl">
+    <div
+      v-for="option in FilterOptions"
+      :key="option"
+      :id="option"
+      @click="selectFilter(option)"
+      :class="{ selected: option === currentFilter }"
+      class="flex-1 cursor-pointer px-2 pb-2 opacity-90 select-none hover:opacity-100"
+    >
+      {{ getOptionLabel(option) }}
+    </div>
+  </div>
+</template>
+
+<style scoped>
+@layer components {
+  .selected {
+    border-bottom-style: var(--tw-border-style);
+    border-bottom-width: 4px;
+    border-bottom-color: var(--color-white);
+  }
+}
+</style>
