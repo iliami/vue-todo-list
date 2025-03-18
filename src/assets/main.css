@@ -5,8 +5,8 @@ body {
   position: relative;
   backface-visibility: hidden;
   will-change: overflow;
-  height: 100dvh;
-  width: 100dvw;
+  height: 100svh;
+  width: 100svw;
   margin: 0;
   padding: 0;
   display: flex;
