@@ -1,7 +1,7 @@
 <script setup lang="ts">
+import IconSort from './icons/IconSort.vue';
 import { type SortOrder, type SortField, SortFieldOptions } from '@/types/SortSettings';
 import { ref } from 'vue';
-import IconSort from './icons/IconSort.vue';
 
 const localSortOrder = ref<SortOrder>('asc');
 const localSortField = ref<SortField>('createdAt');
@@ -44,7 +44,7 @@ function getOptionLabel(option: SortField): string {
     <select
       name="field-name"
       id="field-name"
-      class="rounded-lg border border-[#454a61] bg-[#454a61] px-4 py-2 text-base text-gray-400 focus:border-[#303241] focus:ring-2 focus:ring-[#303241] focus:outline-none"
+      class="w-full rounded-lg border border-[#454a61] bg-[#454a61] px-4 py-2 text-base text-gray-400 focus:border-[#303241] focus:ring-2 focus:ring-[#303241] focus:outline-none"
       v-model="localSortField"
       @change="selectSortField"
     >

@@ -6,8 +6,8 @@ import TodoList from './components/TodoList.vue';
 import TodoListFiltering from './components/TodoListFiltering.vue';
 import TodoListSorting from './components/TodoListSorting.vue';
 import TodoListStatistics from './components/TodoListStatistics.vue';
+import TodoListSearch from './components/TodoListSearch.vue';
 import type { Todo, Urgency } from '@/types/Todo';
-import { UrgencyOptions } from '@/types/Todo';
 import type { Filter } from '@/types/Filter';
 import type { SortOrder, SortField } from '@/types/SortSettings';
 import { ref, computed } from 'vue';
@@ -15,8 +15,10 @@ import { ref, computed } from 'vue';
 const currentFilter = ref<Filter>('all');
 const currentSortOrder = ref<SortOrder>('asc');
 const currentSortField = ref<SortField>('createdAt');
+const currentSearchQuery = ref('');
 
 // const todos = ref<Array<Todo>>([]);
+import { UrgencyOptions } from '@/types/Todo';
 const now = Date.now();
 const todos = ref<Array<Todo>>(
   Array.from(
@@ -32,14 +34,21 @@ const todos = ref<Array<Todo>>(
 );
 
 const computedTodos = computed(() => {
-  let filteredTodos = todos.value;
-  if (currentFilter.value === 'done') {
-    filteredTodos = todos.value.filter((t) => t.done);
-  } else if (currentFilter.value === 'not-done') {
-    filteredTodos = todos.value.filter((t) => !t.done);
-  }
+  const searchQuery = currentSearchQuery.value.trim();
 
-  const sortedTodos = [...filteredTodos].sort((a, b) => {
+  return [
+    ...todos.value
+      .filter((t) => searchQuery === '' || t.name.includes(searchQuery))
+      .filter((t) =>
+        currentFilter.value === 'all'
+          ? true
+          : currentFilter.value === 'done'
+            ? t.done
+            : currentFilter.value === 'not-done'
+              ? !t.done
+              : false,
+      ),
+  ].sort((a, b) => {
     const field = currentSortField.value;
 
     if (field === 'createdAt') {
@@ -64,8 +73,6 @@ const computedTodos = computed(() => {
 
     return 0;
   });
-
-  return sortedTodos;
 });
 
 function handleAdd(newTodo: Todo): void {
@@ -90,11 +97,15 @@ function handleUndone(todo: Todo): void {
 function handleRemove(todo: Todo): void {
   todos.value = todos.value.filter((t) => t !== todo);
 }
+
+function handleUpdateSearchQuery(searchQuery: string): void {
+  currentSearchQuery.value = searchQuery;
+}
 </script>
 
 <template>
   <div class="flex h-svh w-dvw max-w-[1600px] bg-[#25283a] pb-10 text-white">
-    <div class="m-5 mr-2.5 flex h-full flex-5 flex-col gap-5">
+    <div class="m-5 mr-2.5 flex h-full flex-10 flex-col gap-5">
       <div>
         <PanelContainer>
           <TodoListFiltering @update-filter="handleUpdateFilter" />
@@ -113,13 +124,18 @@ function handleRemove(todo: Todo): void {
         </PanelContainer>
       </div>
     </div>
-    <div class="m-5 ml-2.5 flex h-full flex-1 flex-col gap-5">
-      <div class="flex-2 text-2xl font-bold text-[#f3f3f3]">
+    <div class="m-5 ml-2.5 flex h-full flex-3 flex-col gap-5">
+      <div class="h-fit text-2xl font-bold text-[#f3f3f3]">
+        <PanelContainer>
+          <TodoListSearch @update-search="handleUpdateSearchQuery" />
+        </PanelContainer>
+      </div>
+      <div class="h-fit text-2xl font-bold text-[#f3f3f3]">
         <PanelContainer>
           <TodoAddForm @add-todo="handleAdd" />
         </PanelContainer>
       </div>
-      <div class="flex-1 text-2xl font-bold text-[#f3f3f3]">
+      <div class="h-fit text-2xl font-bold text-[#f3f3f3]">
         <PanelContainer>
           <TodoListSorting @update-sort="handleUpdateSort" />
         </PanelContainer>
