@@ -26,7 +26,7 @@ function selectFilter(filter: Filter): void {
 </script>
 
 <template>
-  <div class="flex justify-between gap-5 p-5 px-[50px] py-[25px] text-center text-3xl">
+  <div class="flex justify-between gap-5 p-5 text-center text-3xl not-xl:flex-col">
     <div
       v-for="option in FilterOptions"
       :key="option"

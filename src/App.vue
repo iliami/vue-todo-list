@@ -104,8 +104,10 @@ function handleUpdateSearchQuery(searchQuery: string): void {
 </script>
 
 <template>
-  <div class="flex h-svh w-dvw max-w-[1600px] bg-[#25283a] pb-10 text-white">
-    <div class="m-5 mr-2.5 flex h-full flex-10 flex-col gap-5">
+  <div
+    class="flex h-dvh max-h-[800px] w-dvw max-w-[1600px] bg-[#25283a] pb-10 text-white not-xl:flex-col-reverse not-xl:overflow-y-auto"
+  >
+    <div class="m-5 flex flex-10 flex-col gap-5 xl:mr-2.5 xl:h-full">
       <div>
         <PanelContainer>
           <TodoListFiltering @update-filter="handleUpdateFilter" />
@@ -124,7 +126,7 @@ function handleUpdateSearchQuery(searchQuery: string): void {
         </PanelContainer>
       </div>
     </div>
-    <div class="m-5 ml-2.5 flex h-full flex-3 flex-col gap-5">
+    <div class="m-5 flex flex-3 flex-col gap-5 xl:ml-2.5 xl:h-full">
       <div class="h-fit text-2xl font-bold text-[#f3f3f3]">
         <PanelContainer>
           <TodoListSearch @update-search="handleUpdateSearchQuery" />
@@ -140,7 +142,7 @@ function handleUpdateSearchQuery(searchQuery: string): void {
           <TodoListSorting @update-sort="handleUpdateSort" />
         </PanelContainer>
       </div>
-      <div class="flex-1 text-2xl font-bold text-[#f3f3f3]">
+      <div class="flex-auto text-2xl font-bold text-[#f3f3f3]">
         <PanelContainer>
           <TodoListStatistics :all="todos.length" :done="todos.filter((t) => t.done).length" />
         </PanelContainer>
