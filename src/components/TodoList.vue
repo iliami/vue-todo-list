@@ -6,19 +6,25 @@ interface Props {
   todos: ReadonlyArray<Todo>;
 }
 
-const props = defineProps<Props>();
+defineProps<Props>();
 
-const emit = defineEmits(['done-todo', 'undone-todo', 'remove-todo']);
+const emit = defineEmits<{
+  (event: 'done-todo', todoId: Todo['id']): void;
+  (event: 'undone-todo', todoId: Todo['id']): void;
+  (event: 'edit-todo', todoId: Todo['id']): void;
+  (event: 'remove-todo', todoId: Todo['id']): void;
+}>();
 </script>
 
 <template>
   <div class="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-2.5 pr-5 [direction:ltr]">
     <TodoItem
-      v-for="todo in props.todos"
+      v-for="todo in todos"
       :todo="todo"
       :key="todo.id"
       @done-todo="emit('done-todo', $event)"
       @undone-todo="emit('undone-todo', $event)"
+      @edit-todo="emit('edit-todo', $event)"
       @remove-todo="emit('remove-todo', $event)"
     />
   </div>

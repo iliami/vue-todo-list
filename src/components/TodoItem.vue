@@ -4,12 +4,11 @@ import IconUndone from './icons/IconUndone.vue';
 import IconRemove from './icons/IconRemove.vue';
 import { type Todo, type Urgency } from '@/types/Todo';
 import { formatDate } from '@/utils/DateUtils';
+import IconEdit from './icons/IconEdit.vue';
 
-interface Props {
+const props = defineProps<{
   todo: Todo;
-}
-
-const props = defineProps<Props>();
+}>();
 
 const urgencyColors: Record<Urgency, string> = {
   none: 'bg-transparent',
@@ -18,18 +17,27 @@ const urgencyColors: Record<Urgency, string> = {
   hard: 'bg-[rgb(255,105,50)]',
 };
 
-const emit = defineEmits(['done-todo', 'undone-todo', 'remove-todo']);
+const emit = defineEmits<{
+  (event: 'done-todo', todoId: Todo['id']): void;
+  (event: 'undone-todo', todoId: Todo['id']): void;
+  (event: 'edit-todo', todoId: Todo['id']): void;
+  (event: 'remove-todo', todoId: Todo['id']): void;
+}>();
 
 function handleDone(): void {
-  emit('done-todo', props.todo);
+  emit('done-todo', props.todo.id);
 }
 
 function handleUndone(): void {
-  emit('undone-todo', props.todo);
+  emit('undone-todo', props.todo.id);
+}
+
+function handleEdit(): void {
+  emit('edit-todo', props.todo.id);
 }
 
 function handleRemove(): void {
-  emit('remove-todo', props.todo);
+  emit('remove-todo', props.todo.id);
 }
 </script>
 
@@ -51,6 +59,10 @@ function handleRemove(): void {
         @click="handleUndone"
         v-else
         class="h-8 w-8 text-white/60 hover:text-white/70 active:text-white"
+      />
+      <IconEdit
+        @click="handleEdit"
+        class="h-8 w-8 text-white/50 hover:text-white/60 active:text-white/80"
       />
       <IconRemove
         @click="handleRemove"

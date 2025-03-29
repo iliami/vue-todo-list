@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import PanelContainer from './components/PanelContainer.vue';
 import ScrollbarContainer from './components/ScrollbarContainer.vue';
+import ModalDialog from './components/ModalDialog.vue';
 import TodoAddForm from './components/TodoAddForm.vue';
+import TodoEditForm from './components/TodoEditForm.vue';
 import TodoList from './components/TodoList.vue';
 import TodoListFiltering from './components/TodoListFiltering.vue';
 import TodoListSorting from './components/TodoListSorting.vue';
@@ -11,6 +13,10 @@ import type { Todo, Urgency } from '@/types/Todo';
 import type { Filter } from '@/types/Filter';
 import type { SortOrder, SortField } from '@/types/SortSettings';
 import { ref, computed } from 'vue';
+
+const isModalOpen = ref(false);
+
+const editedTodoId = ref<Todo['id']>();
 
 const currentFilter = ref<Filter>('all');
 const currentSortOrder = ref<SortOrder>('asc');
@@ -88,14 +94,42 @@ function handleUpdateSort(order: SortOrder, field: SortField) {
   currentSortField.value = field;
 }
 
-function handleDone(todo: Todo): void {
-  todo.done = true;
+function handleDone(todoId: Todo['id']): void {
+  const todo = todos.value.find((t) => t.id === todoId);
+  if (todo) {
+    todo.done = true;
+  }
 }
-function handleUndone(todo: Todo): void {
-  todo.done = false;
+
+function handleUndone(todoId: Todo['id']): void {
+  const todo = todos.value.find((t) => t.id === todoId);
+  if (todo) {
+    todo.done = false;
+  }
 }
-function handleRemove(todo: Todo): void {
-  todos.value = todos.value.filter((t) => t !== todo);
+
+function handleEdit(todoId: Todo['id']): void {
+  editedTodoId.value = todoId;
+  isModalOpen.value = true;
+}
+
+function handleRemove(todoId: Todo['id']): void {
+  todos.value = todos.value.filter((t) => t.id !== todoId);
+}
+
+function handleSave(
+  todoId: Todo['id'],
+  todoName: Todo['name'],
+  todoUrgency: Todo['urgency'],
+  todoDone: Todo['done'],
+) {
+  const todo = todos.value.find((t) => t.id === todoId);
+  if (todo) {
+    todo.name = todoName;
+    todo.urgency = todoUrgency;
+    todo.done = todoDone;
+  }
+  isModalOpen.value = false;
 }
 
 function handleUpdateSearchQuery(searchQuery: string): void {
@@ -104,49 +138,59 @@ function handleUpdateSearchQuery(searchQuery: string): void {
 </script>
 
 <template>
-  <div
-    class="flex h-dvh max-h-[800px] w-dvw max-w-[1600px] bg-[#25283a] pb-10 text-white not-xl:flex-col-reverse not-xl:overflow-y-auto"
-  >
-    <div class="m-5 flex flex-10 flex-col gap-5 xl:mr-2.5 xl:h-full">
-      <div>
-        <PanelContainer>
-          <TodoListFiltering @update-filter="handleUpdateFilter" />
-        </PanelContainer>
+  <div class="h-dvh max-h-[800px] w-dvw max-w-[1600px]">
+    <div
+      class="flex h-full w-full bg-[#25283a] pb-10 text-white not-xl:flex-col-reverse not-xl:overflow-y-auto"
+    >
+      <div class="m-5 flex flex-10 flex-col gap-5 xl:mr-2.5 xl:h-full">
+        <div>
+          <PanelContainer>
+            <TodoListFiltering @update-filter="handleUpdateFilter" />
+          </PanelContainer>
+        </div>
+        <div class="h-px min-h-96 flex-1">
+          <PanelContainer>
+            <ScrollbarContainer>
+              <TodoList
+                :todos="computedTodos"
+                @done-todo="handleDone"
+                @undone-todo="handleUndone"
+                @edit-todo="handleEdit"
+                @remove-todo="handleRemove"
+              />
+            </ScrollbarContainer>
+          </PanelContainer>
+        </div>
       </div>
-      <div class="h-px min-h-96 flex-1">
-        <PanelContainer>
-          <ScrollbarContainer>
-            <TodoList
-              :todos="computedTodos"
-              @done-todo="handleDone"
-              @undone-todo="handleUndone"
-              @remove-todo="handleRemove"
-            />
-          </ScrollbarContainer>
-        </PanelContainer>
+      <div class="m-5 flex flex-3 flex-col gap-5 xl:ml-2.5 xl:h-full">
+        <div class="h-fit text-2xl font-bold text-[#f3f3f3]">
+          <PanelContainer>
+            <TodoListSearch @update-search="handleUpdateSearchQuery" />
+          </PanelContainer>
+        </div>
+        <div class="h-fit text-2xl font-bold text-[#f3f3f3]">
+          <PanelContainer>
+            <TodoAddForm @add-todo="handleAdd" />
+          </PanelContainer>
+        </div>
+        <div class="h-fit text-2xl font-bold text-[#f3f3f3]">
+          <PanelContainer>
+            <TodoListSorting @update-sort="handleUpdateSort" />
+          </PanelContainer>
+        </div>
+        <div class="flex-auto text-2xl font-bold text-[#f3f3f3]">
+          <PanelContainer>
+            <TodoListStatistics :all="todos.length" :done="todos.filter((t) => t.done).length" />
+          </PanelContainer>
+        </div>
       </div>
     </div>
-    <div class="m-5 flex flex-3 flex-col gap-5 xl:ml-2.5 xl:h-full">
-      <div class="h-fit text-2xl font-bold text-[#f3f3f3]">
-        <PanelContainer>
-          <TodoListSearch @update-search="handleUpdateSearchQuery" />
-        </PanelContainer>
-      </div>
-      <div class="h-fit text-2xl font-bold text-[#f3f3f3]">
-        <PanelContainer>
-          <TodoAddForm @add-todo="handleAdd" />
-        </PanelContainer>
-      </div>
-      <div class="h-fit text-2xl font-bold text-[#f3f3f3]">
-        <PanelContainer>
-          <TodoListSorting @update-sort="handleUpdateSort" />
-        </PanelContainer>
-      </div>
-      <div class="flex-auto text-2xl font-bold text-[#f3f3f3]">
-        <PanelContainer>
-          <TodoListStatistics :all="todos.length" :done="todos.filter((t) => t.done).length" />
-        </PanelContainer>
-      </div>
-    </div>
+    <ModalDialog
+      class="text-2xl font-bold text-[#f3f3f3]"
+      :is-open="isModalOpen"
+      @close="isModalOpen = false"
+    >
+      <TodoEditForm :todo="todos.find((t) => t.id === editedTodoId)!" @save-todo="handleSave" />
+    </ModalDialog>
   </div>
 </template>
