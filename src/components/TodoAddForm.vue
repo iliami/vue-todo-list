@@ -6,17 +6,25 @@ const emit = defineEmits<{
   (
     event: 'add-todo',
     todoName: Todo['name'],
+    todoDescription: Todo['description'],
     todoUrgency: Todo['urgency'],
     todoHaveChildren: boolean,
   ): void;
 }>();
 
 const todoName = ref<string>('');
+const todoDescription = ref<string>('');
 const todoUrgency = ref<Urgency>('none');
 const todoHaveChildren = ref<boolean>(false);
 
 function handleSubmit(): void {
-  emit('add-todo', todoName.value, todoUrgency.value, todoHaveChildren.value);
+  emit(
+    'add-todo',
+    todoName.value,
+    todoDescription.value,
+    todoUrgency.value,
+    todoHaveChildren.value,
+  );
 
   todoName.value = '';
   todoUrgency.value = 'none';
@@ -52,6 +60,18 @@ function getOptionLabel(option: Urgency): string {
       />
     </div>
     <div class="flex flex-col gap-1">
+      <label for="todo-description" class="text-base font-medium text-gray-200">
+        Описание задачи
+      </label>
+      <textarea
+        rows="5"
+        name="todo-description"
+        placeholder="Описание задачи"
+        class="rounded-lg border border-[#454a61] bg-[#454a61] px-4 py-2 text-base text-gray-400 placeholder:text-gray-400 focus:border-[#303241] focus:ring-2 focus:ring-[#303241] focus:outline-none"
+        v-model="todoDescription"
+      />
+    </div>
+    <div class="flex flex-col gap-1">
       <label for="urgency-type" class="text-base font-medium text-gray-200">Срочность</label>
       <select
         name="urgency-type"
@@ -82,8 +102,9 @@ function getOptionLabel(option: Urgency): string {
       />
     </div>
     <button
+      :disabled="todoName === ''"
       type="submit"
-      class="h-14 w-full rounded-lg bg-[#000]/15 px-6 py-2 text-center text-base font-semibold text-white transition-all duration-300 hover:scale-105 hover:from-[#000]/25 hover:to-[#000]/45 focus:ring-2 focus:ring-[#303241] focus:outline-none active:scale-95"
+      class="h-14 w-full rounded-lg bg-[#000]/15 px-6 py-2 text-center text-base font-semibold text-white transition-all duration-300 hover:scale-105 hover:from-[#000]/25 hover:to-[#000]/45 focus:ring-2 focus:ring-[#303241] focus:outline-none active:scale-95 disabled:opacity-50"
     >
       Добавить задачу
     </button>

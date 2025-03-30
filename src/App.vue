@@ -8,14 +8,32 @@ import TodoList from '@/components/TodoList.vue';
 import TodoListFiltering from '@/components/TodoListFiltering.vue';
 import TodoListSorting from '@/components/TodoListSorting.vue';
 import TodoListSearch from '@/components/TodoListSearch.vue';
-import TodoListStatistics from '@/components/TodoListStatistics.vue';
 import IconGoBack from '@/components/icons/IconGoBack.vue';
 import type { Todo, Urgency } from '@/types/Todo';
 import type { Filter } from '@/types/Filter';
 import type { SortOrder, SortField } from '@/types/SortSettings';
+import type { FloatingWindowInterface } from './types/FloatingWindow';
 import { isHaveAnyChildren } from '@/utils/TodoUtils';
-import { findTodoById, deleteTodoById, countTodos } from '@/utils/TodoListUtils';
-import { ref, computed } from 'vue';
+import { findTodoById, deleteTodoById } from '@/utils/TodoListUtils';
+import { ref, computed, provide } from 'vue';
+import FloatingWindow from './components/FloatingWindow.vue';
+import type { TodoHistory } from './types/Todo';
+import TodoInfo from './components/TodoInfo.vue';
+
+const windowRegistry = ref([]);
+provide('windowRegistry', windowRegistry);
+
+const windows = ref<Array<{ window: FloatingWindowInterface; todo: Todo }>>([]);
+
+function handleAddWindow(todo: Readonly<Todo>) {
+  const newWindow = ref<FloatingWindowInterface>();
+  windows.value.push({
+    window: newWindow.value!,
+    todo: todo,
+  });
+
+  newWindow.value?.open();
+}
 
 const isModalOpen = ref(false);
 
@@ -32,79 +50,83 @@ const generatedTodos: Array<Todo> = [
   {
     id: 1,
     name: 'Организовать конференцию',
+    description: '',
     createdAt: new Date('2023-10-01'),
     urgency: 'hard',
     done: false,
+    history: [
+      {
+        name: 'Организовать конференцию',
+        description: '',
+        urgency: 'hard',
+        done: false,
+        date: new Date('2023-10-01'),
+      },
+    ],
     children: [
       {
         id: 2,
         name: 'Подготовка программы',
+        description: '',
         createdAt: new Date('2023-10-02'),
         urgency: 'medium',
         done: false,
+        history: [
+          {
+            name: 'Подготовка программы',
+            description: '',
+            urgency: 'medium',
+            done: false,
+            date: new Date('2023-10-02'),
+          },
+        ],
         children: [
           {
             id: 3,
             name: 'Составить расписание выступлений',
+            description: '',
             createdAt: new Date('2023-10-03'),
             urgency: 'easy',
             done: false,
+            history: [
+              {
+                name: 'Составить расписание выступлений',
+                description: '',
+                date: new Date('2023-10-03'),
+                urgency: 'easy',
+                done: false,
+              },
+            ],
           },
           {
             id: 4,
             name: 'Пригласить спикеров',
+            description: '',
             createdAt: new Date('2023-10-03'),
             urgency: 'hard',
             done: true,
+            history: [
+              {
+                name: 'Пригласить спикеров',
+                description: '',
+                date: new Date('2023-10-03'),
+                urgency: 'hard',
+                done: true,
+              },
+            ],
           },
           {
             id: 5,
             name: 'Подготовить материалы для участников',
+            description: '',
             createdAt: new Date('2023-10-04'),
             urgency: 'medium',
             done: false,
-          },
-        ],
-      },
-      {
-        id: 6,
-        name: 'Логистика',
-        createdAt: new Date('2023-10-05'),
-        urgency: 'hard',
-        done: false,
-        children: [
-          {
-            id: 7,
-            name: 'Забронировать помещение',
-            createdAt: new Date('2023-10-06'),
-            urgency: 'hard',
-            done: true,
-          },
-          {
-            id: 8,
-            name: 'Организовать транспорт для гостей',
-            createdAt: new Date('2023-10-07'),
-            urgency: 'medium',
-            done: false,
-          },
-          {
-            id: 9,
-            name: 'Установить оборудование',
-            createdAt: new Date('2023-10-08'),
-            urgency: 'hard',
-            done: false,
-            children: [
+            history: [
               {
-                id: 10,
-                name: 'Установить проекторы',
-                createdAt: new Date('2023-10-09'),
-                urgency: 'medium',
-                done: false,
-              },
-              {
-                id: 11,
-                name: 'Настроить звуковое оборудование',
-                createdAt: new Date('2023-10-09'),
+                name: 'Подготовить материалы для участников',
+                description: '',
+                date: new Date('2023-10-04'),
                 urgency: 'medium',
                 done: false,
               },
@@ -113,25 +135,161 @@ const generatedTodos: Array<Todo> = [
         ],
       },
       {
+        id: 6,
+        name: 'Логистика',
+        description: '',
+        createdAt: new Date('2023-10-05'),
+        urgency: 'hard',
+        done: false,
+        history: [
+          {
+            name: 'Логистика',
+            description: '',
+            date: new Date('2023-10-05'),
+            urgency: 'hard',
+            done: false,
+          },
+        ],
+        children: [
+          {
+            id: 7,
+            name: 'Забронировать помещение',
+            description: '',
+            createdAt: new Date('2023-10-06'),
+            urgency: 'hard',
+            done: true,
+            history: [
+              {
+                name: 'Забронировать помещение',
+                description: '',
+                date: new Date('2023-10-06'),
+                urgency: 'hard',
+                done: true,
+              },
+            ],
+          },
+          {
+            id: 8,
+            name: 'Организовать транспорт для гостей',
+            description: '',
+            createdAt: new Date('2023-10-07'),
+            urgency: 'medium',
+            done: false,
+            history: [
+              {
+                name: 'Организовать транспорт для гостей',
+                description: '',
+                date: new Date('2023-10-07'),
+                urgency: 'medium',
+                done: false,
+              },
+            ],
+          },
+          {
+            id: 9,
+            name: 'Установить оборудование',
+            description: '',
+            createdAt: new Date('2023-10-08'),
+            urgency: 'hard',
+            done: false,
+            history: [
+              {
+                description: '',
+                name: 'Установить оборудование',
+                date: new Date('2023-10-08'),
+                urgency: 'hard',
+                done: false,
+              },
+            ],
+            children: [
+              {
+                id: 10,
+                name: 'Установить проекторы',
+                description: '',
+                createdAt: new Date('2023-10-09'),
+                urgency: 'medium',
+                done: false,
+                history: [
+                  {
+                    description: '',
+                    name: 'Установить проекторы',
+                    date: new Date('2023-10-09'),
+                    urgency: 'medium',
+                    done: false,
+                  },
+                ],
+              },
+              {
+                id: 11,
+                name: 'Настроить звуковое оборудование',
+                description: '',
+                createdAt: new Date('2023-10-09'),
+                urgency: 'medium',
+                done: false,
+                history: [
+                  {
+                    description: '',
+                    name: 'Настроить звуковое оборудование',
+                    date: new Date('2023-10-09'),
+                    urgency: 'medium',
+                    done: false,
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      {
         id: 12,
+        description: '',
         name: 'Маркетинг',
         createdAt: new Date('2023-10-10'),
         urgency: 'hard',
         done: false,
+        history: [
+          {
+            description: '',
+            name: 'Маркетинг',
+            date: new Date('2023-10-10'),
+            urgency: 'hard',
+            done: false,
+          },
+        ],
         children: [
           {
             id: 13,
+            description: '',
             name: 'Разработать рекламную кампанию',
             createdAt: new Date('2023-10-11'),
             urgency: 'medium',
             done: false,
+            history: [
+              {
+                description: '',
+                name: 'Разработать рекламную кампанию',
+                date: new Date('2023-10-11'),
+                urgency: 'medium',
+                done: false,
+              },
+            ],
           },
           {
             id: 14,
+            description: '',
             name: 'Запустить рекламу в соцсетях',
             createdAt: new Date('2023-10-12'),
             urgency: 'easy',
             done: false,
+            history: [
+              {
+                description: '',
+                name: 'Запустить рекламу в соцсетях',
+                date: new Date('2023-10-12'),
+                urgency: 'easy',
+                done: false,
+              },
+            ],
           },
         ],
       },
@@ -140,51 +298,121 @@ const generatedTodos: Array<Todo> = [
   {
     id: 15,
     name: 'Подготовка отчета по проекту',
+    description: '',
     createdAt: new Date('2023-10-13'),
     urgency: 'medium',
     done: false,
+    history: [
+      {
+        name: 'Подготовка отчета по проекту',
+        description: '',
+        date: new Date('2023-10-13'),
+        urgency: 'medium',
+        done: false,
+      },
+    ],
     children: [
       {
         id: 16,
         name: 'Собрать данные по проекту',
+        description: '',
         createdAt: new Date('2023-10-14'),
         urgency: 'easy',
         done: false,
+        history: [
+          {
+            name: 'Собрать данные по проекту',
+            description: '',
+            date: new Date('2023-10-14'),
+            urgency: 'easy',
+            done: false,
+          },
+        ],
       },
       {
         id: 17,
         name: 'Проанализировать результаты',
+        description: '',
         createdAt: new Date('2023-10-15'),
         urgency: 'medium',
         done: false,
+        history: [
+          {
+            name: 'Проанализировать результаты',
+            description: '',
+            date: new Date('2023-10-15'),
+            urgency: 'medium',
+            done: false,
+          },
+        ],
       },
       {
         id: 18,
         name: 'Написать текст отчета',
+        description: '',
         createdAt: new Date('2023-10-16'),
         urgency: 'hard',
         done: false,
+        history: [
+          {
+            name: 'Написать текст отчета',
+            description: '',
+            date: new Date('2023-10-16'),
+            urgency: 'hard',
+            done: false,
+          },
+        ],
         children: [
           {
             id: 19,
             name: 'Написать введение',
+            description: '',
             createdAt: new Date('2023-10-17'),
             urgency: 'medium',
             done: false,
+            history: [
+              {
+                name: 'Написать введение',
+                description: '',
+                date: new Date('2023-10-17'),
+                urgency: 'medium',
+                done: false,
+              },
+            ],
           },
           {
             id: 20,
             name: 'Описать основные этапы',
+            description: '',
             createdAt: new Date('2023-10-17'),
             urgency: 'medium',
             done: false,
+            history: [
+              {
+                name: 'Описать основные этапы',
+                description: '',
+                date: new Date('2023-10-17'),
+                urgency: 'medium',
+                done: false,
+              },
+            ],
           },
           {
             id: 21,
             name: 'Добавить выводы',
+            description: '',
             createdAt: new Date('2023-10-18'),
             urgency: 'easy',
             done: false,
+            history: [
+              {
+                name: 'Добавить выводы',
+                description: '',
+                date: new Date('2023-10-18'),
+                urgency: 'easy',
+                done: false,
+              },
+            ],
           },
         ],
       },
@@ -241,16 +469,26 @@ const computedTodos = computed(() => {
 
 function handleAdd(
   todoName: Todo['name'],
+  todoDescription: Todo['description'],
   todoUrgency: Todo['urgency'],
   todoHaveChildren: boolean,
 ): void {
+  const todoHistory: TodoHistory = {
+    name: todoName,
+    description: todoDescription,
+    urgency: todoUrgency,
+    done: false,
+    date: new Date(),
+  };
   const newTodo: Todo = {
     id: Date.now(),
     name: todoName,
+    description: todoDescription,
     urgency: todoUrgency,
     done: false,
     createdAt: new Date(),
     children: todoHaveChildren ? [] : undefined,
+    history: [todoHistory],
   };
 
   if (history.value.length === 0) {
@@ -275,6 +513,7 @@ function handleEdit(todoId: Todo['id']): void {
 function handleSave(
   todoId: Todo['id'],
   todoName: Todo['name'],
+  todoDescription: Todo['description'],
   todoUrgency: Todo['urgency'],
   todoDone: Todo['done'],
   todoHaveChildren: boolean,
@@ -282,8 +521,19 @@ function handleSave(
   const todo = findTodoById(todos.value, todoId);
   if (todo) {
     todo.name = todoName;
+    todo.description = todoDescription;
     todo.urgency = todoUrgency;
     todo.done = todoDone;
+
+    const todoHistory: TodoHistory = {
+      name: todo.name,
+      description: todo.description,
+      urgency: todo.urgency,
+      done: todo.done,
+      date: new Date(),
+    };
+    todo.history = [...todo.history, todoHistory];
+
     if (!isHaveAnyChildren(todo)) {
       todo.children = todoHaveChildren ? [] : undefined;
     }
@@ -291,7 +541,7 @@ function handleSave(
   isModalOpen.value = false;
 }
 
-function handleNavigateTo(todo: Todo): void {
+function handleNavigateTo(todo: Readonly<Todo>): void {
   if (todo.children && Array.isArray(todo.children)) {
     history.value = [...history.value, todo];
   }
@@ -320,6 +570,15 @@ function handleDone(todoId: Todo['id']): void {
   const todo = findTodoById(todos.value, todoId);
   if (todo) {
     todo.done = true;
+
+    const todoHistory: TodoHistory = {
+      name: todo.name,
+      description: todo.description,
+      urgency: todo.urgency,
+      done: todo.done,
+      date: new Date(),
+    };
+    todo.history = [...todo.history, todoHistory];
   }
 }
 
@@ -327,6 +586,15 @@ function handleUndone(todoId: Todo['id']): void {
   const todo = findTodoById(todos.value, todoId);
   if (todo) {
     todo.done = false;
+
+    const todoHistory: TodoHistory = {
+      name: todo.name,
+      description: todo.description,
+      urgency: todo.urgency,
+      done: todo.done,
+      date: new Date(),
+    };
+    todo.history = [...todo.history, todoHistory];
   }
 }
 </script>
@@ -353,11 +621,12 @@ function handleUndone(todoId: Todo['id']): void {
             <ScrollbarContainer>
               <TodoList
                 :todos="computedTodos"
+                @navigate-to="handleNavigateTo"
+                @open-more="handleAddWindow"
                 @done-todo="handleDone"
                 @undone-todo="handleUndone"
                 @edit-todo="handleEdit"
                 @remove-todo="handleRemove"
-                @navigate-to="handleNavigateTo"
               />
             </ScrollbarContainer>
           </PanelContainer>
@@ -374,17 +643,9 @@ function handleUndone(todoId: Todo['id']): void {
             <TodoListSorting @update-sort="handleUpdateSort" />
           </PanelContainer>
         </div>
-        <div class="h-fit text-2xl font-bold text-[#f3f3f3]">
+        <div class="h-fit flex-auto text-2xl font-bold text-[#f3f3f3]">
           <PanelContainer>
             <TodoAddForm @add-todo="handleAdd" />
-          </PanelContainer>
-        </div>
-        <div class="flex-auto text-2xl font-bold text-[#f3f3f3]">
-          <PanelContainer>
-            <TodoListStatistics
-              :all="countTodos(todos, (_) => true)"
-              :done="countTodos(todos, (t) => t.done)"
-            />
           </PanelContainer>
         </div>
       </div>
@@ -396,5 +657,13 @@ function handleUndone(todoId: Todo['id']): void {
     >
       <TodoEditForm :todo="findTodoById(todos, editedTodoId!)!" @save-todo="handleSave" />
     </ModalDialog>
+    <FloatingWindow
+      v-for="({ todo }, index) in windows"
+      :key="index"
+      :initial-x="50 + 5 * index"
+      :initial-y="50 + 5 * index"
+    >
+      <TodoInfo :todo="todo" />
+    </FloatingWindow>
   </div>
 </template>

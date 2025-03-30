@@ -35,7 +35,7 @@ onMounted(() => {
 
 <template>
   <Transition name="fade">
-    <div v-if="isOpen" class="fixed inset-0 z-50 overflow-auto backdrop-blur-xs">
+    <div v-if="isOpen" class="fixed inset-0 z-10000 overflow-auto backdrop-blur-xs">
       <div class="flex min-h-screen items-center justify-center" @click.self="handleOverlayClick">
         <Transition name="scale">
           <dialog

@@ -12,6 +12,7 @@ const emit = defineEmits<{
     event: 'save-todo',
     todoId: Todo['id'],
     todoName: Todo['name'],
+    todoDescription: Todo['description'],
     todoUrgency: Todo['urgency'],
     todoDone: Todo['done'],
     todoHaveChildren: boolean,
@@ -19,6 +20,7 @@ const emit = defineEmits<{
 }>();
 
 const todoName = ref<string>(props.todo.name);
+const todoDescription = ref<string>(props.todo.description);
 const todoUrgency = ref<Urgency>(props.todo.urgency);
 const todoDone = ref<boolean>(props.todo.done);
 const todoHaveChildren = ref<boolean>(
@@ -30,6 +32,7 @@ function handleSubmit(): void {
     'save-todo',
     props.todo.id,
     todoName.value,
+    todoDescription.value,
     todoUrgency.value,
     todoDone.value,
     todoHaveChildren.value,
@@ -62,6 +65,18 @@ function getOptionLabel(option: Urgency): string {
         placeholder="Название задачи"
         class="rounded-lg border border-[#454a61] bg-[#454a61] px-4 py-2 text-base text-gray-400 placeholder:text-gray-400 focus:border-[#303241] focus:ring-2 focus:ring-[#303241] focus:outline-none"
         v-model="todoName"
+      />
+    </div>
+    <div class="flex flex-col gap-1">
+      <label for="todo-description" class="text-base font-medium text-gray-200">
+        Описание задачи
+      </label>
+      <textarea
+        rows="6"
+        name="todo-description"
+        placeholder="Описание задачи"
+        class="rounded-lg border border-[#454a61] bg-[#454a61] px-4 py-2 text-base text-gray-400 placeholder:text-gray-400 focus:border-[#303241] focus:ring-2 focus:ring-[#303241] focus:outline-none"
+        v-model="todoDescription"
       />
     </div>
     <div class="flex flex-col gap-1">
@@ -105,8 +120,9 @@ function getOptionLabel(option: Urgency): string {
       />
     </div>
     <button
+      :disabled="todoName === ''"
       type="submit"
-      class="h-14 w-full rounded-lg bg-[#000]/15 px-6 py-2 text-center text-base font-semibold text-white transition-all duration-300 hover:scale-105 hover:from-[#000]/25 hover:to-[#000]/45 focus:ring-2 focus:ring-[#303241] focus:outline-none active:scale-95"
+      class="h-14 w-full rounded-lg bg-[#000]/15 px-6 py-2 text-center text-base font-semibold text-white transition-all duration-300 hover:scale-105 hover:from-[#000]/25 hover:to-[#000]/45 focus:ring-2 focus:ring-[#303241] focus:outline-none active:scale-95 disabled:opacity-50"
     >
       Сохранить задачу
     </button>

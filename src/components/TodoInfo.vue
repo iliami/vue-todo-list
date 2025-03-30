@@ -1,0 +1,39 @@
+<script setup lang="ts">
+import type { Todo } from '@/types/Todo';
+import { formatDate } from '@/utils/DateUtils';
+import ScrollbarContainer from './ScrollbarContainer.vue';
+
+defineProps<{ todo: Readonly<Todo> }>();
+</script>
+
+<template>
+  <div
+    class="flex max-h-144 flex-col font-sans text-[#f3f3f3] select-none [direction:rtl]"
+    :class="{
+      'h-fit': todo.description === '',
+    }"
+  >
+    <h3
+      class="my-5 text-4xl font-bold select-text"
+      :class="{
+        'line-through decoration-solid decoration-2': todo.done,
+      }"
+    >
+      {{ todo.name }}
+    </h3>
+    <p class="text-md my-2.5 font-medium">Создано: {{ formatDate(todo.createdAt) }}</p>
+    <p class="text-md my-2.5 font-medium">
+      Обновлено: {{ formatDate(todo.history[todo.history.length - 1].date) }}
+    </p>
+    <ScrollbarContainer v-if="todo.description !== ''" class="mt-5 h-fit flex-auto">
+      <p
+        v-if="todo.description !== ''"
+        class="text-2xl font-semibold break-words select-text [direction:ltr]"
+      >
+        {{ todo.description }}
+      </p>
+    </ScrollbarContainer>
+  </div>
+</template>
+
+<style scoped></style>

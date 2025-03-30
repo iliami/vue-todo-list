@@ -18,7 +18,8 @@ const urgencyColors: Record<Urgency, string> = {
 };
 
 const emit = defineEmits<{
-  (event: 'navigate-to', todo: Todo): void;
+  (event: 'navigate-to', todo: Readonly<Todo>): void;
+  (event: 'open-more', todo: Readonly<Todo>): void;
   (event: 'done-todo', todoId: Todo['id']): void;
   (event: 'undone-todo', todoId: Todo['id']): void;
   (event: 'edit-todo', todoId: Todo['id']): void;
@@ -27,6 +28,10 @@ const emit = defineEmits<{
 
 function handleNavigateTo(): void {
   emit('navigate-to', props.todo);
+}
+
+function handleOpenMore(): void {
+  emit('open-more', props.todo);
 }
 
 function handleDone(): void {
@@ -50,7 +55,8 @@ function handleRemove(): void {
   <div
     class="h-40 rounded-2xl bg-black/15 p-2.5 transition duration-100 select-none hover:scale-105"
     :class="{ completed: props.todo.done }"
-    @click="handleNavigateTo"
+    @click.right.stop="handleNavigateTo"
+    @click.left.stop="handleOpenMore"
   >
     <p class="truncate text-2xl font-bold text-[#f3f3f3] select-text" v-text="props.todo.name"></p>
     <p class="text-4 my-2 text-[#d0d0d0] select-text" v-text="formatDate(props.todo.createdAt)"></p>
