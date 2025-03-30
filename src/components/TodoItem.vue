@@ -18,11 +18,16 @@ const urgencyColors: Record<Urgency, string> = {
 };
 
 const emit = defineEmits<{
+  (event: 'navigate-to', todo: Todo): void;
   (event: 'done-todo', todoId: Todo['id']): void;
   (event: 'undone-todo', todoId: Todo['id']): void;
   (event: 'edit-todo', todoId: Todo['id']): void;
   (event: 'remove-todo', todoId: Todo['id']): void;
 }>();
+
+function handleNavigateTo(): void {
+  emit('navigate-to', props.todo);
+}
 
 function handleDone(): void {
   emit('done-todo', props.todo.id);
@@ -45,27 +50,28 @@ function handleRemove(): void {
   <div
     class="h-40 rounded-2xl bg-black/15 p-2.5 transition duration-100 select-none hover:scale-105"
     :class="{ completed: props.todo.done }"
+    @click="handleNavigateTo"
   >
     <p class="truncate text-2xl font-bold text-[#f3f3f3] select-text" v-text="props.todo.name"></p>
     <p class="text-4 my-2 text-[#d0d0d0] select-text" v-text="formatDate(props.todo.createdAt)"></p>
     <div class="h-1 w-full" :class="urgencyColors[props.todo.urgency]"></div>
     <div class="flex justify-between p-6">
       <IconDone
-        @click="handleDone"
+        @click.stop="handleDone"
         v-if="!props.todo.done"
         class="h-8 w-8 text-white/60 hover:text-white/70 active:text-white"
       />
       <IconUndone
-        @click="handleUndone"
+        @click.stop="handleUndone"
         v-else
         class="h-8 w-8 text-white/60 hover:text-white/70 active:text-white"
       />
       <IconEdit
-        @click="handleEdit"
+        @click.stop="handleEdit"
         class="h-8 w-8 text-white/50 hover:text-white/60 active:text-white/80"
       />
       <IconRemove
-        @click="handleRemove"
+        @click.stop="handleRemove"
         class="h-8 w-8 text-white/50 hover:text-white/60 active:text-white/80"
       />
     </div>

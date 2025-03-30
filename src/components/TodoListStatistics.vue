@@ -1,15 +1,13 @@
 <script setup lang="ts">
-interface Props {
+defineProps<{
   all: number;
   done: number;
-}
-
-const props = defineProps<Props>();
+}>();
 </script>
 
 <template>
   <div>
-    <p>Всего: {{ props.all }}</p>
-    <p>Выполнено: {{ props.done }}</p>
+    <p>Всего: {{ all }}</p>
+    <p>Выполнено: {{ done }}</p>
   </div>
 </template>

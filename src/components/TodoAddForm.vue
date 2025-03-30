@@ -2,24 +2,25 @@
 import { type Todo, type Urgency, UrgencyOptions } from '@/types/Todo';
 import { ref } from 'vue';
 
-const emit = defineEmits(['add-todo']);
+const emit = defineEmits<{
+  (
+    event: 'add-todo',
+    todoName: Todo['name'],
+    todoUrgency: Todo['urgency'],
+    todoHaveChildren: boolean,
+  ): void;
+}>();
 
 const todoName = ref<string>('');
 const todoUrgency = ref<Urgency>('none');
+const todoHaveChildren = ref<boolean>(false);
 
 function handleSubmit(): void {
-  const newTodo: Todo = {
-    id: Date.now(),
-    name: todoName.value,
-    urgency: todoUrgency.value,
-    done: false,
-    createdAt: new Date(),
-  };
-
-  emit('add-todo', newTodo);
+  emit('add-todo', todoName.value, todoUrgency.value, todoHaveChildren.value);
 
   todoName.value = '';
   todoUrgency.value = 'none';
+  todoHaveChildren.value = false;
 }
 
 function getOptionLabel(option: Urgency): string {
@@ -67,6 +68,18 @@ function getOptionLabel(option: Urgency): string {
           {{ getOptionLabel(option) }}
         </option>
       </select>
+    </div>
+    <div class="flex flex-row-reverse justify-end gap-1">
+      <label for="todo-have-children" class="text-base font-medium text-gray-200"
+        >Наличие подзадач</label
+      >
+      <input
+        type="checkbox"
+        name="todo-have-children"
+        placeholder="Наличие подзадач"
+        class="rounded-lg border border-[#454a61] bg-[#454a61] px-4 py-2 text-base text-gray-400 placeholder:text-gray-400 focus:border-[#303241] focus:ring-2 focus:ring-[#303241] focus:outline-none"
+        v-model="todoHaveChildren"
+      />
     </div>
     <button
       type="submit"

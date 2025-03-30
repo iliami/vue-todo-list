@@ -7,4 +7,5 @@ export interface Todo {
   createdAt: Date;
   urgency: Urgency;
   done: boolean;
+  children?: Array<Todo>;
 }

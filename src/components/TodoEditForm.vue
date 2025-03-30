@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { type Todo, type Urgency, UrgencyOptions } from '@/types/Todo';
+import { isHaveAnyChildren } from '@/utils/TodoUtils';
 import { ref } from 'vue';
 
 const props = defineProps<{
@@ -13,15 +14,26 @@ const emit = defineEmits<{
     todoName: Todo['name'],
     todoUrgency: Todo['urgency'],
     todoDone: Todo['done'],
+    todoHaveChildren: boolean,
   ): void;
 }>();
 
 const todoName = ref<string>(props.todo.name);
 const todoUrgency = ref<Urgency>(props.todo.urgency);
 const todoDone = ref<boolean>(props.todo.done);
+const todoHaveChildren = ref<boolean>(
+  props.todo.children !== undefined && Array.isArray(props.todo.children),
+);
 
 function handleSubmit(): void {
-  emit('save-todo', props.todo.id, todoName.value, todoUrgency.value, todoDone.value);
+  emit(
+    'save-todo',
+    props.todo.id,
+    todoName.value,
+    todoUrgency.value,
+    todoDone.value,
+    todoHaveChildren.value,
+  );
 }
 
 function getOptionLabel(option: Urgency): string {
@@ -78,6 +90,18 @@ function getOptionLabel(option: Urgency): string {
         placeholder="Задача выполнена"
         class="rounded-lg border border-[#454a61] bg-[#454a61] px-4 py-2 text-base text-gray-400 placeholder:text-gray-400 focus:border-[#303241] focus:ring-2 focus:ring-[#303241] focus:outline-none"
         v-model="todoDone"
+      />
+    </div>
+    <div v-show="!isHaveAnyChildren(todo)" class="flex flex-row-reverse justify-end gap-1">
+      <label for="todo-have-children" class="text-base font-medium text-gray-200"
+        >Наличие подзадач</label
+      >
+      <input
+        type="checkbox"
+        name="todo-have-children"
+        placeholder="Наличие подзадач"
+        class="rounded-lg border border-[#454a61] bg-[#454a61] px-4 py-2 text-base text-gray-400 placeholder:text-gray-400 focus:border-[#303241] focus:ring-2 focus:ring-[#303241] focus:outline-none"
+        v-model="todoHaveChildren"
       />
     </div>
     <button

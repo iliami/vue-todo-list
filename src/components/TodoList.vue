@@ -9,6 +9,7 @@ interface Props {
 defineProps<Props>();
 
 const emit = defineEmits<{
+  (event: 'navigate-to', todo: Todo): void;
   (event: 'done-todo', todoId: Todo['id']): void;
   (event: 'undone-todo', todoId: Todo['id']): void;
   (event: 'edit-todo', todoId: Todo['id']): void;
@@ -22,6 +23,7 @@ const emit = defineEmits<{
       v-for="todo in todos"
       :todo="todo"
       :key="todo.id"
+      @navigate-to="emit('navigate-to', $event)"
       @done-todo="emit('done-todo', $event)"
       @undone-todo="emit('undone-todo', $event)"
       @edit-todo="emit('edit-todo', $event)"
