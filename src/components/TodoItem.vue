@@ -2,18 +2,13 @@
 import IconDone from './icons/IconDone.vue';
 import IconUndone from './icons/IconUndone.vue';
 import IconRemove from './icons/IconRemove.vue';
+import IconEdit from './icons/IconEdit.vue';
 import { type Todo, type Urgency } from '@/types/Todo';
 import { formatDate } from '@/utils/DateUtils';
-import IconEdit from './icons/IconEdit.vue';
-import { useModalStore } from '@/stores/modalStore';
-import { ref } from 'vue';
 
 const props = defineProps<{
   todo: Todo;
 }>();
-
-const modalStore = useModalStore();
-const editButton = ref<HTMLElement | null>(null);
 
 const urgencyColors: Record<Urgency, string> = {
   none: 'bg-transparent',
@@ -48,10 +43,6 @@ function handleUndone(): void {
 }
 
 function handleEdit(): void {
-  if (modalStore.isOpen) return;
-  if (editButton.value) {
-    modalStore.openModal(editButton.value);
-  }
   emit('edit-todo', props.todo.id);
 }
 
@@ -127,7 +118,6 @@ function getOptionLabel(option: Urgency): string {
         aria-label="Изменить задачу"
         :id="'todo-item_edit-todo_' + todo.id"
         :name="'todo-item_edit-todo_' + todo.id"
-        ref="editButton"
         @click.stop="handleEdit"
         @keyup.enter.stop.once="handleEdit"
         class="h-fit w-fit text-white/60 hover:text-white/70 active:text-white"

@@ -1,39 +1,27 @@
 <script setup lang="ts">
 import PanelContainer from '@/components/PanelContainer.vue';
 import ScrollbarContainer from '@/components/ScrollbarContainer.vue';
-import ModalDialog from '@/components/ModalDialog.vue';
+import FloatingWindow from '@/components/FloatingWindow.vue';
+import IconGoBack from '@/components/icons/IconGoBack.vue';
 import TodoAddForm from '@/components/TodoAddForm.vue';
 import TodoEditForm from '@/components/TodoEditForm.vue';
 import TodoList from '@/components/TodoList.vue';
 import TodoListFiltering from '@/components/TodoListFiltering.vue';
 import TodoListSorting from '@/components/TodoListSorting.vue';
 import TodoListSearch from '@/components/TodoListSearch.vue';
-import IconGoBack from '@/components/icons/IconGoBack.vue';
+import TodoInfo from '@/components/TodoInfo.vue';
 import type { Todo, Urgency } from '@/types/Todo';
 import type { Filter } from '@/types/Filter';
 import type { SortOrder, SortField } from '@/types/SortSettings';
+import type { TodoHistory } from './types/Todo';
 import { isHaveAnyChildren } from '@/utils/TodoUtils';
 import { findTodoById, deleteTodoById } from '@/utils/TodoListUtils';
-import { ref, computed, provide } from 'vue';
-import FloatingWindow from './components/FloatingWindow.vue';
-import type { TodoHistory } from './types/Todo';
-import TodoInfo from './components/TodoInfo.vue';
-import { useModalStore } from './stores/modalStore';
+import { ref, computed, provide, nextTick } from 'vue';
 
 const windowRegistry = ref([]);
 provide('windowRegistry', windowRegistry);
 
 const windows = ref<Array<{ id: number; isVisible: boolean; todo: Todo }>>([]);
-
-// function handleAddWindow(todo: Readonly<Todo>) {
-//   const newWindow = ref<FloatingWindowInterface>();
-//   windows.value.push({
-//     window: newWindow.value!,
-//     todo: todo,
-//   });
-
-//   newWindow.value?.open();
-// }
 
 function handleAddWindow(todo: Todo) {
   windows.value.push({
@@ -46,10 +34,6 @@ function handleAddWindow(todo: Todo) {
 function handleRemoveWindow(windowId: number) {
   windows.value = windows.value.filter((w) => w.id !== windowId);
 }
-
-const modalStore = useModalStore();
-
-const editedTodoId = ref<Todo['id']>();
 
 const currentFilter = ref<Filter>('all');
 const currentSortOrder = ref<SortOrder>('asc');
@@ -479,6 +463,13 @@ const computedTodos = computed(() => {
   return filteredAndSortedTodos;
 });
 
+const form = ref<HTMLElement | null>(null);
+const editedTodoId = ref<Todo['id']>();
+const editedTodo = computed(() => {
+  const todoId = editedTodoId.value!;
+  return findTodoById(todos.value, todoId)!;
+});
+
 function handleAdd(
   todoName: Todo['name'],
   todoDescription: Todo['description'],
@@ -519,6 +510,12 @@ function handleRemove(todoId: Todo['id']): void {
 
 function handleEdit(todoId: Todo['id']): void {
   editedTodoId.value = todoId;
+  nextTick(() => {
+    form.value?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    });
+  });
 }
 
 function handleSave(
@@ -548,8 +545,8 @@ function handleSave(
     if (!isHaveAnyChildren(todo)) {
       todo.children = todoHaveChildren ? [] : undefined;
     }
-    modalStore.closeModal();
   }
+  editedTodoId.value = undefined;
 }
 
 function handleNavigateTo(todo: Readonly<Todo>): void {
@@ -613,7 +610,6 @@ function handleUndone(todoId: Todo['id']): void {
 <template>
   <div class="h-dvh max-h-[800px] w-dvw max-w-[1600px]">
     <div
-      :inert="modalStore.isOpen ? true : undefined"
       class="relative flex h-full w-full items-center justify-center overflow-hidden will-change-auto backface-hidden"
     >
       <div
@@ -661,9 +657,10 @@ function handleUndone(todoId: Todo['id']): void {
               <TodoListSorting @update-sort="handleUpdateSort" />
             </PanelContainer>
           </div>
-          <div class="h-fit flex-auto text-2xl font-bold text-[#f3f3f3]">
+          <div class="h-fit flex-auto text-2xl font-bold text-[#f3f3f3]" ref="form">
             <PanelContainer>
-              <TodoAddForm @add-todo="handleAdd" />
+              <TodoAddForm v-if="editedTodoId === undefined" @add-todo="handleAdd" />
+              <TodoEditForm v-else :todo="editedTodo" @save-todo="handleSave" />
             </PanelContainer>
           </div>
         </div>
@@ -679,8 +676,5 @@ function handleUndone(todoId: Todo['id']): void {
         <TodoInfo :todo="window.todo" />
       </FloatingWindow>
     </div>
-    <ModalDialog class="text-2xl font-bold text-[#f3f3f3]" v-show="modalStore.isOpen">
-      <TodoEditForm :todo="findTodoById(todos, editedTodoId!)!" @save-todo="handleSave" />
-    </ModalDialog>
   </div>
 </template>

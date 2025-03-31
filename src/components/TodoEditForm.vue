@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { type Todo, type Urgency, UrgencyOptions } from '@/types/Todo';
 import { isHaveAnyChildren } from '@/utils/TodoUtils';
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 
 const props = defineProps<{
   todo: Todo;
@@ -25,6 +25,17 @@ const todoUrgency = ref<Urgency>(props.todo.urgency);
 const todoDone = ref<boolean>(props.todo.done);
 const todoHaveChildren = ref<boolean>(
   props.todo.children !== undefined && Array.isArray(props.todo.children),
+);
+
+watch(
+  () => props.todo,
+  (newVal) => {
+    todoName.value = newVal.name;
+    todoDescription.value = newVal.description;
+    todoUrgency.value = newVal.urgency;
+    todoDone.value = newVal.done;
+    todoHaveChildren.value = newVal.children !== undefined && Array.isArray(newVal.children);
+  },
 );
 
 function handleSubmit(): void {
@@ -72,7 +83,7 @@ function getOptionLabel(option: Urgency): string {
         Описание задачи
       </label>
       <textarea
-        rows="6"
+        :rows="todoHaveChildren ? 5 : 3"
         name="todo-description"
         placeholder="Описание задачи"
         class="rounded-lg border border-[#454a61] bg-[#454a61] px-4 py-2 text-base text-gray-400 placeholder:text-gray-400 focus:border-[#303241] focus:ring-2 focus:ring-[#303241] focus:outline-none"
