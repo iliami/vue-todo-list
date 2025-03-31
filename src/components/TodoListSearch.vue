@@ -15,10 +15,14 @@ function updateSearchQuery(): void {
 
 <template>
   <div class="flex gap-2.5">
-    <div @click="updateSearchQuery">
-      <IconSearch class="h-10 w-10 text-white/50 hover:text-white/60 active:text-white/80" />
-    </div>
+    <button
+      @click="updateSearchQuery"
+      class="h-fit w-fit text-white/50 hover:text-white/60 active:text-white/80"
+    >
+      <IconSearch class="h-10 w-10" />
+    </button>
     <input
+      aria-label="Поиск по названию"
       type="text"
       placeholder="Поиск по названию.."
       v-model="localSearchQuery"

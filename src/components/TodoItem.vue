@@ -5,10 +5,15 @@ import IconRemove from './icons/IconRemove.vue';
 import { type Todo, type Urgency } from '@/types/Todo';
 import { formatDate } from '@/utils/DateUtils';
 import IconEdit from './icons/IconEdit.vue';
+import { useModalStore } from '@/stores/modalStore';
+import { ref } from 'vue';
 
 const props = defineProps<{
   todo: Todo;
 }>();
+
+const modalStore = useModalStore();
+const editButton = ref<HTMLElement | null>(null);
 
 const urgencyColors: Record<Urgency, string> = {
   none: 'bg-transparent',
@@ -43,11 +48,30 @@ function handleUndone(): void {
 }
 
 function handleEdit(): void {
+  if (modalStore.isOpen) return;
+  if (editButton.value) {
+    modalStore.openModal(editButton.value);
+  }
   emit('edit-todo', props.todo.id);
 }
 
 function handleRemove(): void {
   emit('remove-todo', props.todo.id);
+}
+
+function getOptionLabel(option: Urgency): string {
+  switch (option) {
+    case 'none':
+      return 'Нет';
+    case 'easy':
+      return 'Маленькая';
+    case 'medium':
+      return 'Средняя';
+    case 'hard':
+      return 'Высокая';
+    default:
+      return '';
+  }
 }
 </script>
 
@@ -55,31 +79,71 @@ function handleRemove(): void {
   <div
     class="h-40 rounded-2xl bg-black/15 p-2.5 transition duration-100 select-none hover:scale-105"
     :class="{ completed: props.todo.done }"
-    @click.right.stop="handleNavigateTo"
+    @click.right.stop.prevent="handleNavigateTo"
+    @keyup.enter.stop="handleNavigateTo"
     @click.left.stop="handleOpenMore"
+    @keyup.space.prevent="handleOpenMore"
+    tabindex="0"
   >
-    <p class="truncate text-2xl font-bold text-[#f3f3f3] select-text" v-text="props.todo.name"></p>
-    <p class="text-4 my-2 text-[#d0d0d0] select-text" v-text="formatDate(props.todo.createdAt)"></p>
-    <div class="h-1 w-full" :class="urgencyColors[props.todo.urgency]"></div>
+    <p
+      aria-label="Название задачи"
+      class="truncate text-2xl font-bold text-[#f3f3f3] select-text"
+      v-text="todo.name"
+    ></p>
+    <p
+      aria-label="Дата создания задачи"
+      class="text-4 my-2 text-[#d0d0d0] select-text"
+      v-text="formatDate(todo.createdAt)"
+    ></p>
+    <div
+      :aria-label="'Срочность задачи ' + getOptionLabel(todo.urgency)"
+      class="h-1 w-full"
+      :class="urgencyColors[todo.urgency]"
+    ></div>
     <div class="flex justify-between p-6">
-      <IconDone
+      <button
+        v-if="!todo.done"
+        aria-label="Пометить задачу выполненной"
+        :id="'todo-item_mark-todo-done_' + todo.id"
+        :name="'todo-item_mark-todo-done_' + todo.id"
         @click.stop="handleDone"
-        v-if="!props.todo.done"
-        class="h-8 w-8 text-white/60 hover:text-white/70 active:text-white"
-      />
-      <IconUndone
-        @click.stop="handleUndone"
+        @keyup.enter.stop.once="handleDone"
+        class="h-fit w-fit text-white/60 hover:text-white/70 active:text-white"
+      >
+        <IconDone class="h-8 w-8" />
+      </button>
+      <button
         v-else
-        class="h-8 w-8 text-white/60 hover:text-white/70 active:text-white"
-      />
-      <IconEdit
+        aria-label="Пометить задачу невыполненной"
+        :id="'todo-item_mark-todo-undone_' + todo.id"
+        :name="'todo-item_mark-todo-undone_' + todo.id"
+        @click.stop="handleUndone"
+        @keyup.enter.stop.once="handleUndone"
+        class="h-fit w-fit text-white/60 hover:text-white/70 active:text-white"
+      >
+        <IconUndone class="h-8 w-8" />
+      </button>
+      <button
+        aria-label="Изменить задачу"
+        :id="'todo-item_edit-todo_' + todo.id"
+        :name="'todo-item_edit-todo_' + todo.id"
+        ref="editButton"
         @click.stop="handleEdit"
-        class="h-8 w-8 text-white/50 hover:text-white/60 active:text-white/80"
-      />
-      <IconRemove
+        @keyup.enter.stop.once="handleEdit"
+        class="h-fit w-fit text-white/60 hover:text-white/70 active:text-white"
+      >
+        <IconEdit class="h-8 w-8" />
+      </button>
+      <button
+        aria-label="Удалить задачу"
+        :id="'todo-item_remove-todo_' + todo.id"
+        :name="'todo-item_remove-todo_' + todo.id"
         @click.stop="handleRemove"
-        class="h-8 w-8 text-white/50 hover:text-white/60 active:text-white/80"
-      />
+        @keyup.enter.stop.once="handleRemove"
+        class="h-fit w-fit text-white/60 hover:text-white/70 active:text-white"
+      >
+        <IconRemove class="h-8 w-8" />
+      </button>
     </div>
   </div>
 </template>

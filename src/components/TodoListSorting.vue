@@ -35,12 +35,13 @@ function getOptionLabel(option: SortField): string {
 
 <template>
   <div class="flex gap-2.5">
-    <div @click="toggleSortOrder">
-      <IconSort
-        class="h-10 w-10 text-white/50 hover:text-white/60 active:text-white/80"
-        :class="{ 'scale-x-[1] scale-y-[-1]': localSortOrder === 'desc' }"
-      />
-    </div>
+    <button
+      @click="toggleSortOrder"
+      class="h-fit w-fit text-white/50 hover:text-white/60 active:text-white/80"
+      :class="{ 'scale-x-[1] scale-y-[-1]': localSortOrder === 'desc' }"
+    >
+      <IconSort class="h-10 w-10" />
+    </button>
     <select
       name="field-name"
       id="field-name"

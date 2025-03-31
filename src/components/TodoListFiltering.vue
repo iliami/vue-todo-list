@@ -26,17 +26,21 @@ function selectFilter(filter: Filter): void {
 </script>
 
 <template>
-  <div class="flex justify-between gap-5 p-5 text-center text-3xl not-xl:flex-col">
-    <div
-      v-for="option in FilterOptions"
-      :key="option"
+  <div class="flex justify-between gap-5 p-5 text-center text-3xl not-xl:flex-col" tabindex="0">
+    <a
+      v-for="(option, index) in FilterOptions"
+      :key="index"
       :id="option"
       @click="selectFilter(option)"
+      @keyup.enter="selectFilter(option)"
+      @keyup.space.prevent="selectFilter(option)"
       :class="{ selected: option === currentFilter }"
       class="flex-1 cursor-pointer px-2 pb-2 opacity-90 select-none hover:opacity-100"
+      href="#"
+      target="_self"
     >
       {{ getOptionLabel(option) }}
-    </div>
+    </a>
   </div>
 </template>
 

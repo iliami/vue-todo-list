@@ -12,30 +12,42 @@ import IconGoBack from '@/components/icons/IconGoBack.vue';
 import type { Todo, Urgency } from '@/types/Todo';
 import type { Filter } from '@/types/Filter';
 import type { SortOrder, SortField } from '@/types/SortSettings';
-import type { FloatingWindowInterface } from './types/FloatingWindow';
 import { isHaveAnyChildren } from '@/utils/TodoUtils';
 import { findTodoById, deleteTodoById } from '@/utils/TodoListUtils';
 import { ref, computed, provide } from 'vue';
 import FloatingWindow from './components/FloatingWindow.vue';
 import type { TodoHistory } from './types/Todo';
 import TodoInfo from './components/TodoInfo.vue';
+import { useModalStore } from './stores/modalStore';
 
 const windowRegistry = ref([]);
 provide('windowRegistry', windowRegistry);
 
-const windows = ref<Array<{ window: FloatingWindowInterface; todo: Todo }>>([]);
+const windows = ref<Array<{ id: number; isVisible: boolean; todo: Todo }>>([]);
 
-function handleAddWindow(todo: Readonly<Todo>) {
-  const newWindow = ref<FloatingWindowInterface>();
+// function handleAddWindow(todo: Readonly<Todo>) {
+//   const newWindow = ref<FloatingWindowInterface>();
+//   windows.value.push({
+//     window: newWindow.value!,
+//     todo: todo,
+//   });
+
+//   newWindow.value?.open();
+// }
+
+function handleAddWindow(todo: Todo) {
   windows.value.push({
-    window: newWindow.value!,
+    id: Date.now() + Math.random(),
+    isVisible: true,
     todo: todo,
   });
-
-  newWindow.value?.open();
 }
 
-const isModalOpen = ref(false);
+function handleRemoveWindow(windowId: number) {
+  windows.value = windows.value.filter((w) => w.id !== windowId);
+}
+
+const modalStore = useModalStore();
 
 const editedTodoId = ref<Todo['id']>();
 
@@ -507,7 +519,6 @@ function handleRemove(todoId: Todo['id']): void {
 
 function handleEdit(todoId: Todo['id']): void {
   editedTodoId.value = todoId;
-  isModalOpen.value = true;
 }
 
 function handleSave(
@@ -537,8 +548,8 @@ function handleSave(
     if (!isHaveAnyChildren(todo)) {
       todo.children = todoHaveChildren ? [] : undefined;
     }
+    modalStore.closeModal();
   }
-  isModalOpen.value = false;
 }
 
 function handleNavigateTo(todo: Readonly<Todo>): void {
@@ -602,68 +613,74 @@ function handleUndone(todoId: Todo['id']): void {
 <template>
   <div class="h-dvh max-h-[800px] w-dvw max-w-[1600px]">
     <div
-      class="flex h-full w-full bg-[#25283a] pb-10 text-white not-xl:flex-col-reverse not-xl:overflow-y-auto"
+      :inert="modalStore.isOpen ? true : undefined"
+      class="relative flex h-full w-full items-center justify-center overflow-hidden will-change-auto backface-hidden"
     >
-      <div class="m-5 flex flex-10 flex-col gap-5 xl:mr-2.5 xl:h-full">
-        <div class="flex gap-5">
-          <PanelContainer v-if="history.length !== 0" class="flex flex-1">
-            <IconGoBack
-              @click="handleGoBack"
-              class="m-auto h-12 w-12 rounded-lg bg-[#000]/15 p-1 text-center text-2xl font-bold text-[#f3f3f3] transition-all duration-300 hover:scale-105 hover:from-[#000]/25 hover:to-[#000]/45 focus:ring-2 focus:ring-[#303241] focus:outline-none active:scale-95"
-            />
-          </PanelContainer>
-          <PanelContainer>
-            <TodoListFiltering @update-filter="handleUpdateFilter" />
-          </PanelContainer>
+      <div
+        class="flex h-full w-full bg-[#25283a] pb-10 text-white not-xl:flex-col-reverse not-xl:overflow-y-auto"
+      >
+        <div class="m-5 flex flex-10 flex-col gap-5 xl:mr-2.5 xl:h-full">
+          <div class="flex gap-5">
+            <PanelContainer v-show="history.length !== 0" class="flex flex-1">
+              <button
+                @click="handleGoBack"
+                aria-label="Вернуться к задаче-родителю"
+                class="m-auto h-fit w-fit rounded-lg bg-[#000]/15 p-1 text-center text-2xl font-bold text-[#f3f3f3] transition-all duration-300 hover:scale-105 hover:from-[#000]/25 hover:to-[#000]/45 focus:ring-2 focus:ring-[#303241] focus:outline-none active:scale-95"
+              >
+                <IconGoBack class="h-12 w-12" />
+              </button>
+            </PanelContainer>
+            <PanelContainer>
+              <TodoListFiltering @update-filter="handleUpdateFilter" />
+            </PanelContainer>
+          </div>
+          <div class="h-px min-h-96 flex-1">
+            <PanelContainer>
+              <ScrollbarContainer>
+                <TodoList
+                  :todos="computedTodos"
+                  @navigate-to="handleNavigateTo"
+                  @open-more="handleAddWindow"
+                  @done-todo="handleDone"
+                  @undone-todo="handleUndone"
+                  @edit-todo="handleEdit"
+                  @remove-todo="handleRemove"
+                />
+              </ScrollbarContainer>
+            </PanelContainer>
+          </div>
         </div>
-        <div class="h-px min-h-96 flex-1">
-          <PanelContainer>
-            <ScrollbarContainer>
-              <TodoList
-                :todos="computedTodos"
-                @navigate-to="handleNavigateTo"
-                @open-more="handleAddWindow"
-                @done-todo="handleDone"
-                @undone-todo="handleUndone"
-                @edit-todo="handleEdit"
-                @remove-todo="handleRemove"
-              />
-            </ScrollbarContainer>
-          </PanelContainer>
+        <div class="m-5 flex flex-3 flex-col justify-items-start gap-5 xl:ml-2.5 xl:h-full">
+          <div class="h-fit text-2xl font-bold text-[#f3f3f3]">
+            <PanelContainer>
+              <TodoListSearch @update-search="handleUpdateSearchQuery" />
+            </PanelContainer>
+          </div>
+          <div class="h-fit text-2xl font-bold text-[#f3f3f3]">
+            <PanelContainer>
+              <TodoListSorting @update-sort="handleUpdateSort" />
+            </PanelContainer>
+          </div>
+          <div class="h-fit flex-auto text-2xl font-bold text-[#f3f3f3]">
+            <PanelContainer>
+              <TodoAddForm @add-todo="handleAdd" />
+            </PanelContainer>
+          </div>
         </div>
       </div>
-      <div class="m-5 flex flex-3 flex-col justify-items-start gap-5 xl:ml-2.5 xl:h-full">
-        <div class="h-fit text-2xl font-bold text-[#f3f3f3]">
-          <PanelContainer>
-            <TodoListSearch @update-search="handleUpdateSearchQuery" />
-          </PanelContainer>
-        </div>
-        <div class="h-fit text-2xl font-bold text-[#f3f3f3]">
-          <PanelContainer>
-            <TodoListSorting @update-sort="handleUpdateSort" />
-          </PanelContainer>
-        </div>
-        <div class="h-fit flex-auto text-2xl font-bold text-[#f3f3f3]">
-          <PanelContainer>
-            <TodoAddForm @add-todo="handleAdd" />
-          </PanelContainer>
-        </div>
-      </div>
+      <FloatingWindow
+        v-for="(window, index) in windows"
+        :key="window.id"
+        v-model="window.isVisible"
+        :initial-x="50 + index * 5"
+        :initial-y="50 + index * 5"
+        @close="handleRemoveWindow(window.id)"
+      >
+        <TodoInfo :todo="window.todo" />
+      </FloatingWindow>
     </div>
-    <ModalDialog
-      class="text-2xl font-bold text-[#f3f3f3]"
-      :is-open="isModalOpen"
-      @close="isModalOpen = false"
-    >
+    <ModalDialog class="text-2xl font-bold text-[#f3f3f3]" v-show="modalStore.isOpen">
       <TodoEditForm :todo="findTodoById(todos, editedTodoId!)!" @save-todo="handleSave" />
     </ModalDialog>
-    <FloatingWindow
-      v-for="({ todo }, index) in windows"
-      :key="index"
-      :initial-x="50 + 5 * index"
-      :initial-y="50 + 5 * index"
-    >
-      <TodoInfo :todo="todo" />
-    </FloatingWindow>
   </div>
 </template>

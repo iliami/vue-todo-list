@@ -1,24 +1,12 @@
 @import 'tailwindcss';
 
 body {
-  overflow: hidden;
-  position: relative;
-  backface-visibility: hidden;
-  will-change: overflow;
-  height: 100svh;
-  width: 100svw;
+  height: 100dvh;
+  width: 100dvw;
   margin: 0;
   padding: 0;
   display: flex;
   justify-content: center;
   align-items: center;
   background-color: #25283a;
-}
-
-@media (max-width: 1000px), (max-height: 470px) {
-  body {
-    overflow: auto;
-    backface-visibility: visible;
-    position: absolute;
-  }
 }

@@ -14,21 +14,28 @@ defineProps<{ todo: Readonly<Todo> }>();
     }"
   >
     <h3
-      class="my-5 text-4xl font-bold select-text"
+      aria-label="Название задачи"
+      class="my-5 cursor-text text-4xl font-bold select-text"
       :class="{
         'line-through decoration-solid decoration-2': todo.done,
       }"
     >
       {{ todo.name }}
     </h3>
-    <p class="text-md my-2.5 font-medium">Создано: {{ formatDate(todo.createdAt) }}</p>
-    <p class="text-md my-2.5 font-medium">
+    <p aria-label="Дата создания задачи" class="text-md my-2.5 cursor-default font-medium">
+      Создано: {{ formatDate(todo.createdAt) }}
+    </p>
+    <p
+      aria-label="Дата последнего изменения задачи"
+      class="text-md my-2.5 cursor-default font-medium"
+    >
       Обновлено: {{ formatDate(todo.history[todo.history.length - 1].date) }}
     </p>
     <ScrollbarContainer v-if="todo.description !== ''" class="mt-5 h-fit flex-auto">
       <p
+        aria-label="Описание задачи"
         v-if="todo.description !== ''"
-        class="text-2xl font-semibold break-words select-text [direction:ltr]"
+        class="cursor-text text-2xl font-semibold break-words select-text [direction:ltr]"
       >
         {{ todo.description }}
       </p>

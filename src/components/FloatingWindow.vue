@@ -158,17 +158,18 @@ const updateZIndexes = () => {
   <Transition name="fade">
     <div
       v-if="isOpen"
-      class="fixed rounded-lg"
+      class="fixed cursor-move rounded-lg"
       :class="[windowStyle.base, windowStyle.size, windowStyle.padding, windowStyle.border]"
       :style="{ left: `${x}px`, top: `${y}px`, zIndex: zIndexValue }"
-      @mousedown="onDragStart"
     >
       <Transition name="scale">
         <div
           v-if="isOpen"
-          class="relative m-4 w-full max-w-lg rounded-2xl border border-gray-800 bg-[#34384e] p-5 shadow-xl"
+          class="relative w-full max-w-lg rounded-2xl border border-gray-800 bg-[#34384e] p-10 shadow-xl"
+          @mousedown.self="onDragStart"
         >
           <button
+            aria-label="Закрыть окно"
             class="absolute top-2 right-2 text-2xl text-gray-300 hover:text-gray-500"
             :class="[closeButtonStyle.base, closeButtonStyle.hover]"
             @click.stop="handleClose"
@@ -176,7 +177,7 @@ const updateZIndexes = () => {
             ×
           </button>
 
-          <div class="p-4 pt-0">
+          <div class="cursor-text p-4 pt-0">
             <slot />
           </div>
         </div>
