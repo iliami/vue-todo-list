@@ -18,6 +18,8 @@ import { isHaveAnyChildren } from '@/utils/TodoUtils';
 import { findTodoById, deleteTodoById } from '@/utils/TodoListUtils';
 import { ref, computed, provide, nextTick } from 'vue';
 
+// TODO: needs refactoring
+
 const windowRegistry = ref([]);
 provide('windowRegistry', windowRegistry);
 
